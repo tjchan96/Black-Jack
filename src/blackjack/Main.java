@@ -1,13 +1,9 @@
 package blackjack;
 
-import java.awt.Image;
 import java.awt.Toolkit;
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Random;
-import javax.imageio.ImageIO;
-import javax.swing.ImageIcon;
+
 import javax.swing.JFrame;
 
 /**
@@ -19,9 +15,8 @@ public class Main
     private Random randomNumberGenerator;
     private ArrayList<Integer> fiftyTwoList;
     final private JFrame cardBoard;
-//    private ImageIcon cardCover;
-    private ArrayList<GenericPlayer> players;
-    private Painter canvasJr;
+    private ArrayList<Player> players;
+    private Painter painter;
     static public final int screenWidth = Toolkit.getDefaultToolkit().getScreenSize().width;
     static public final int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
 
@@ -37,13 +32,10 @@ public class Main
 
     public Main()
     {
-//        cardCover = new ImageIcon(loadIcon("CardCover_3.jpg"));
         cardBoard = new JFrame("Memory");
         cardBoard.setSize(screenWidth, screenHeight);
         cardBoard.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         cardBoard.setTitle("Black Jack");
-        canvasJr = new Painter(this);
-        cardBoard.add(canvasJr);
 
         randomNumberGenerator = new Random();
         fiftyTwoList = new ArrayList<Integer>();
@@ -51,14 +43,17 @@ public class Main
         createFiftyTwoList();
         knuth();
 
-        players = new ArrayList<GenericPlayer>();
+        players = new ArrayList<Player>();
 
         players.add(new You(cardBoard, fiftyTwoList));
-        players.add(new AIPlayerOne(cardBoard, fiftyTwoList));
-        players.add(new AIPlayerTwo(cardBoard, fiftyTwoList));
-        players.add(new AIPlayerThree(cardBoard, fiftyTwoList));
-        players.add(new AIPlayerFour(cardBoard, fiftyTwoList));
+        players.add(new AIPlayer(cardBoard, fiftyTwoList));
+        players.add(new AIPlayer(cardBoard, fiftyTwoList));
+        players.add(new AIPlayer(cardBoard, fiftyTwoList));
+        players.add(new AIPlayer(cardBoard, fiftyTwoList));
         players.add(new Dealer(cardBoard, fiftyTwoList));
+        
+        painter = new Painter(this);
+        cardBoard.add(painter);
 
         cardBoard.setVisible(true);
     }
@@ -97,7 +92,7 @@ public class Main
 
         for (int i = 0; i < players.size(); i++)
         {
-//            System.out.println(players.get(i).score + "      " + i);
+            System.out.println(players.get(i).score + "      " + i);
             if (players.get(i).score > highestScore && players.get(i).score < 22)
             {
                 highestScore = players.get(i).score;
@@ -123,7 +118,7 @@ public class Main
         }
     }
     
-    public ArrayList<GenericPlayer> getPlayers()
+    public ArrayList<Player> getPlayers()
     {
         return players;
     }

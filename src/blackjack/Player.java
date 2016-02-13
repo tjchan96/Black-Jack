@@ -1,15 +1,14 @@
 package blackjack;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Image;
-import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Random;
-import javax.imageio.ImageIO;
+
 import javax.swing.JFrame;
 
-public abstract class GenericPlayer
+public abstract class Player
 {
     protected Random randomNumberGenerator;
     protected ArrayList<Integer> hand;
@@ -17,14 +16,11 @@ public abstract class GenericPlayer
     protected boolean fiveCardWin = false;
     private int lastFlippedCard = 0;
 
-    protected boolean capableOfFlippingCard = false;
-    final protected JFrame cardBoard;
-    static public int BUSTED = 1;
-    static public int NOT_BUSTED = 2;
+    protected final JFrame cardBoard;
 
-    abstract public int play();
+    public abstract boolean play();
 
-    public GenericPlayer(JFrame cardB, ArrayList<Integer> fiftyTwoList)
+    public Player(JFrame cardB, ArrayList<Integer> fiftyTwoList)
     {
         randomNumberGenerator = new Random();
         hand = new ArrayList<Integer>();
@@ -71,21 +67,29 @@ public abstract class GenericPlayer
         checkFiveCardWin();
     }
 
-    protected int detectBust()
+    protected boolean isBusted()
     {
         calculateScore();
         synchronized (cardBoard)
         {
-            if (score > 21)
-            {
-                return GenericPlayer.BUSTED;
-            }
-            return GenericPlayer.NOT_BUSTED;
+            return score > 21;
         }
     }
-
-    public void paint(Graphics g, Painter canvas)
+    
+    public void paint(Graphics g, Painter painter, int x, int y, int w, int h)
     {
+        for (int i = 0; i < this.getLastFlippedCard(); i++)
+        {
+            g.drawImage(painter.loadIcon("Card" + hand.get(i) + ".jpg"), w / 3 + x + i * w / 45, y, w / 45, h / 20, null);
+        }
+
+        if (isBusted())
+        {
+            g.setColor(Color.black);
+            Font newFont = g.getFont().deriveFont(200);
+            g.setFont(newFont);
+            g.drawString("BUSTED", w / 3 + x + 1 * w / 45 / 2, y + h / 20 + newFont.getSize());
+        }
     }
 
     protected void checkFiveCardWin()
@@ -111,10 +115,7 @@ public abstract class GenericPlayer
         {
             lastFlippedCard += 1;
             calculateScore();
-            detectBust();
-            capableOfFlippingCard = true;
         }
-        capableOfFlippingCard = false;
     }
 
     public void deckWasClicked()
@@ -123,22 +124,6 @@ public abstract class GenericPlayer
 
     public void passWasClicked()
     {
-    }
-
-    protected Image loadIcon(Integer cardValue) //Needs to be fixed without copy
-    {
-        URL url;
-        url = getClass().getResource("/images/Card" + cardValue + ".jpg");
-        Image cardFace;
-        try
-        {
-            cardFace = ImageIO.read(url);
-            return cardFace;
-        } catch (IOException ex)
-        {
-            System.out.println("error");
-            return null;
-        }
     }
 
     public int getLastFlippedCard()

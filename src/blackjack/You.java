@@ -1,23 +1,19 @@
 package blackjack;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.Image;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import javax.swing.JFrame;
 
 /**
  *
  * @author tj
  */
-public class You extends GenericPlayer
+public class You extends Player
 {
     private boolean isWaitingForEvent = false;
     private boolean endTurnClicked = false;
-    private Image cardCover2;
 
     public You(JFrame cardBoard, ArrayList<Integer> fiftyTwoList)
     {
@@ -28,36 +24,13 @@ public class You extends GenericPlayer
         }
     }
 
-    private boolean isBusted()
+    public boolean play()
     {
-        if (detectBust() == GenericPlayer.BUSTED)
-        {
-            return true;
-        } else
-        {
-            return false;
-        }
-    }
-
-    private boolean hasWon()
-    {
-        checkFiveCardWin();
-        if (fiveCardWin == true)
-        {
-            return true;
-        } else
-        {
-            return false;
-        }
-    }
-
-    public int play()
-    {
-        while (isBusted() == false && endTurnClicked == false && hasWon() == false)
+        while (isBusted() == false && endTurnClicked == false)
         {
             waitForEvent();
         }
-        return detectBust();
+        return isBusted();
     }
 
     private void waitForEvent()
@@ -84,6 +57,15 @@ public class You extends GenericPlayer
         if (isWaitingForEvent)
         {
             flipACard();
+            if (isBusted())
+            {
+            	endTurnClicked = true;
+                synchronized (this)
+                {
+                    this.notify();
+                    isWaitingForEvent = false;
+                }
+            }
         }
     }
 
@@ -99,41 +81,5 @@ public class You extends GenericPlayer
                 isWaitingForEvent = false;
             }
         }
-    }
-
-    @Override
-    public void paint(Graphics g, Painter canvas)
-    {
-        int h = canvas.getHeight();
-        int w = canvas.getWidth();
-
-        int youLocationX = 9 * w / 45;
-        int youLocationY = h * 13 / 20;
-
-        for (int i = 0; i < this.getLastFlippedCard(); i++)
-        {
-            g.drawImage(loadIcon(hand.get(i)), w / 3 + youLocationX + i * w / 45, youLocationY, w / 45, h / 20, null);
-
-        }
-            if (isBusted() == true)
-            {
-                g.setColor(Color.black);
-                Font newFont = g.getFont().deriveFont(200);
-                g.setFont(newFont);
-                g.drawString("BUSTED", w / 3 + youLocationX + 0 * w / 45, youLocationY + h / 20);
-            }
-    }
-
-    @Override
-    protected int detectBust()
-    {
-        synchronized (this)
-        {
-            if (score > 21)
-            {
-                return GenericPlayer.BUSTED;
-            }
-        }
-        return NOT_BUSTED;
     }
 }

@@ -3,6 +3,7 @@ package blackjack;
 import java.awt.*;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
 import javax.imageio.ImageIO;
@@ -13,10 +14,14 @@ import javax.imageio.ImageIO;
  */
 public class Painter extends Canvas implements MouseListener
 {
-    private Main main;
-    private int mouseX = 0;
-    private int mouseY = 0;
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = -698416571512385181L;
+	private Main main;
     private Image cardCover;
+    private Point[] locationsByPlayerID = new Point[6];
+    private BufferedImage offscreen = null;
 
     public Painter(Main mainArg)
     {
@@ -24,14 +29,54 @@ public class Painter extends Canvas implements MouseListener
         main.getPlayers();
         this.addMouseListener(this);
         cardCover = loadIcon("CardCover_3.jpg");
+        for (int i = 0; i < main.getPlayers().size(); i++)
+        {
+        	locationsByPlayerID[i] = new Point();
+        }
+    }
+    
+    @Override
+    public void update(Graphics g)
+    {
+        Graphics offgc;
+        Rectangle box = g.getClipBounds();
+
+        offscreen = new BufferedImage(box.width, box.height, BufferedImage.TYPE_INT_RGB);
+        offgc = offscreen.getGraphics();
+        offgc.setColor(getBackground());
+        offgc.fillRect(0, 0, box.width, box.height);
+        offgc.setColor(getForeground());
+        offgc.translate(-box.x, -box.y);
+        paint(offgc);
+        g.drawImage(offscreen, box.x, box.y, this);
     }
 
     @Override
     public void paint(Graphics g)
     {
-        int h = this.getHeight();
-        int w = this.getWidth();
+        int h = getHeight();
+        int w = getWidth();
+        
+        int player2LocationX = -5 * w / 45;
         int dealerLocationY = 10 * h / 20;
+        int youLocationX = 9 * w / 45;
+        int youLocationY = h * 13 / 20;
+        int player1LocationX = 1 * w / 45;
+        int player3LocationY = h * 7 / 20 - h / 20;
+        int dealerLocationX = w / 3;
+        
+        locationsByPlayerID[0].x = youLocationX;
+        locationsByPlayerID[0].y = youLocationY;
+        locationsByPlayerID[1].x = player1LocationX;
+        locationsByPlayerID[1].y = youLocationY;
+        locationsByPlayerID[2].x = player2LocationX;
+        locationsByPlayerID[2].y = dealerLocationY;
+        locationsByPlayerID[3].x = player1LocationX;
+        locationsByPlayerID[3].y = player3LocationY;
+        locationsByPlayerID[4].x = youLocationX;
+        locationsByPlayerID[4].y = player3LocationY;
+        locationsByPlayerID[5].x = dealerLocationX;
+        locationsByPlayerID[5].y = dealerLocationY;
 
         g.setColor(new Color(75, 75, 75));
         g.fillRect(0, 0, this.getWidth(), this.getHeight());
@@ -42,7 +87,7 @@ public class Painter extends Canvas implements MouseListener
 
         for (int i = 0; i < main.getPlayers().size(); i++)
         {
-            main.getPlayers().get(i).paint(g, this);
+            main.getPlayers().get(i).paint(g, this, locationsByPlayerID[i].x, locationsByPlayerID[i].y, w, h);
         }
 
         g.setColor(Color.yellow);
@@ -52,8 +97,6 @@ public class Painter extends Canvas implements MouseListener
 
     public void mouseClicked(MouseEvent me)
     {
-        mouseX = me.getX();
-        mouseY = me.getY();
         int h = this.getHeight();
         int w = this.getWidth();
         int dealerLocationY = 10 * h / 20;
