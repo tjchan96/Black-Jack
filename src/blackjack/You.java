@@ -51,13 +51,11 @@ public class You extends Player
         }
     }
 
-    @Override
     public void deckWasClicked()
     {
         if (isWaitingForEvent)
         {
-            flipACard();
-            if (isBusted())
+            if (!flipACard())
             {
             	endTurnClicked = true;
                 synchronized (this)
@@ -69,7 +67,6 @@ public class You extends Player
         }
     }
 
-    @Override
     public void passWasClicked()
     {
         if (isWaitingForEvent)

@@ -6,6 +6,8 @@ import java.awt.event.MouseListener;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+
 import javax.imageio.ImageIO;
 
 /**
@@ -22,6 +24,7 @@ public class Painter extends Canvas implements MouseListener
     private Image cardCover;
     private Point[] locationsByPlayerID = new Point[6];
     private BufferedImage offscreen = null;
+    private HashMap<String, Image> memoize = new HashMap<String, Image>();
 
     public Painter(Main mainArg)
     {
@@ -105,31 +108,39 @@ public class Painter extends Canvas implements MouseListener
 
         if (deck.contains(me.getPoint()))
         {
-            main.getPlayers().get(0).deckWasClicked();
+            ((You) main.getPlayers().get(0)).deckWasClicked();
             this.repaint();
         }
 
         if (pass.contains(me.getPoint()))
         {
-            main.getPlayers().get(0).passWasClicked();
+            ((You) main.getPlayers().get(0)).passWasClicked();
             this.repaint();
         }
     }
 
     public Image loadIcon(String cardName)
     {
-        Image cardCoverTemp = null;
+        Image cardImage = null;
+        
+        if (memoize.containsKey(cardName))
+        {
+			return memoize.get(cardName);
+		}
 
         URL url;
         url = getClass().getResource("/images/" + cardName);
         try
         {
-            cardCoverTemp = ImageIO.read(url);
+            cardImage = ImageIO.read(url);
         } catch (IOException ex)
         {
             System.out.println("error");
         }
-        return cardCoverTemp;
+        
+        memoize.put(cardName, cardImage);
+        
+        return cardImage;
     }
 
 
